@@ -1,59 +1,95 @@
-# Refactor & Extend: Simple Tool-Using Agent
+# Assignment Project from Optimizely
 
-**Goal:** Turn a brittle, partially working agent into production-quality code, then extend it with a new tool and real tests.
+This project is completed as an assignment for Optimizely, focusing on making brittle code solid, typed, and easy to extend without using frameworks.
 
----
-You must **refactor for robustness**, **add one new tool** (translator / unit converter), and **add proper tests**.
----
+## Architecture
 
-## Your Tasks (Summary)
+![Initial Architecture](initial_architecture.png)
 
-1. **Refactor**
-2. **Improve**
-3. **Add ONE new tool** 
-4. **Write tests**
-5. **Improve Documentation**
+### Components
 
-See the assignment brief for full details (shared in the job post).
+- **Input Guardrails:** trim, sanitize, token budget
+- **Interpreter:** asks the model for a plan, not a final answer
+- **Parser and Router:** fix messy output, enrich simple multi-step cases
+- **Runner:** executes tool calls in order, uses placeholders t0, t1
+- **Toolbox and Registry:** calculator, weather, knowledge base, foreign exchange, unit converter, translator, time and date
+- **Responder:** returns either direct text or the last tool result
+- **Output Guardrails:** validate type, round numbers, format text, redact unsafe bits
+- **Telemetry:** logging, usage, price, latency from start to finish
 
----
+## Key Behavior
 
-## Quick Start
+- **Safety:** calculator uses AST, no eval
+- **Typing:** schemas for plans and tool args
+- **Fault tolerance:** malformed model output parsed with strict then loose strategies
+- **Defaults:** static providers for tests, swap to real APIs by config
 
-### Python 3.10+ recommended
+
+## Requirements
+
+- **Python:** 3.10 or newer
+- **OS:** Linux, macOS, Windows
+
+## Setup
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
-### Run
+## Configure Model Provider
+
+Choose one provider with environment variables:
+
+```env
+MODEL_PROVIDER=openai, anthropic, gemini, ollama, or fake
+OPENAI_API_KEY=...        # when MODEL_PROVIDER=openai
+ANTHROPIC_API_KEY=...     # when MODEL_PROVIDER=anthropic
+GEMINI_API_KEY=...        # when MODEL_PROVIDER=gemini
+OLLAMA_BASE_URL=http://localhost:11434  # when MODEL_PROVIDER=ollama
+OLLAMA_MODEL=gemma2:2b                   # example
+```
+
+### Optional Telemetry Settings
+
+```env
+LOG_LEVEL=info, debug
+ENABLE_PRICING=true or false
+ENABLE_LATENCY=true or false
+```
+
+## Run
+
+Pass your prompt to main.py:
 
 ```bash
-python main.py "What is 12.5% of 243?"
-python main.py "Summarize today's weather in Paris in 3 words"
-python main.py "Who is Ada Lovelace?"
-python main.py "Add 10 to the average temperature in Paris and London right now."
+python app/main.py "What is 12.5% of 243?"
+# or
+python -m app.main "Summarize today's weather in Paris in 3 words"
 ```
 
-### Test
+### Example Queries
+
+The following examples should work out of the box:
+
+```
+"What is 12.5% of 243?"
+"Who is Ada Lovelace?"
+"Add 10 to the average temperature in Paris and London right now."
+"Convert the average of 10 and 20 USD into EUR."
+```
+
+## Test
 
 ```bash
 pytest -q
 ```
 
-> Note: The fake LLM sometimes emits malformed JSON to simulate real-world flakiness.
+## Troubleshooting
 
----
-
-## What we expect you to change
-
-- Split responsibilities into modules/classes.
-- Add a schema for tool plans; validate inputs and tool names.
-- Make tool calls resilient and typed;
-- Add one new tool and tests that prove your design is extensible.
-- Update this README with an architecture diagram (ASCII ok) and clear instructions.
-- You can use Real LLMs or a fake one, but ensure your code is robust against malformed responses.
-
-Good luck & have fun!
+- **No output:** check MODEL_PROVIDER, API key, .env loaded
+- **Ollama errors:** confirm base URL, model pulled
+- **Tests flaky:** switch to MODEL_PROVIDER=fake
