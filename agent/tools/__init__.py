@@ -1,4 +1,4 @@
-"""Legacy tools module - imports from new structure."""
+"""Legacy tools compatibility layer."""
 from src.agent.adapters.tools import calculator, weather, kb
 
 # Legacy functions for backward compatibility

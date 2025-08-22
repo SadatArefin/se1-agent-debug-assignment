@@ -1,17 +1,16 @@
-from .llm import call_llm
-from . import tools
+"""Legacy agent module - imports from new structure."""
+from src.agent.core.orchestrator import Orchestrator
+from src.agent.adapters.llm.fake_client import FakeClient
+from src.agent.registry import registry
+from src.agent.adapters.telemetry.otel import OTelTelemetry
+
+# Import tools to register them
+import src.agent.adapters.tools
 
 def answer(q: str):
-    plan = call_llm(q)
-
-    if plan and isinstance(plan, dict) and "tool" in plan:
-        if plan["tool"] == "calc":
-            return tools.evaluate(plan["args"]["expr"])
-        elif plan["tool"] == "weather":
-            city = plan["args"]["city"]
-            t = tools.temp(city)
-            return f"{t} C"
-        elif plan["tool"] == "kb":
-            return tools.kb_lookup(plan["args"]["q"])
-
-    return str(plan)
+    """Legacy answer function that uses the new orchestrator."""
+    llm_client = FakeClient()
+    telemetry = OTelTelemetry(enabled=False)
+    orchestrator = Orchestrator(llm_client, registry, telemetry)
+    
+    return orchestrator.answer(q)
