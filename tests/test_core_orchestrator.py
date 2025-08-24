@@ -1,9 +1,9 @@
 """Tests for the core orchestrator."""
 import pytest
-from src.agent.core.orchestrator import Orchestrator
-from src.agent.adapters.tools.calculator import CalculatorTool
-from src.agent.adapters.tools.weather import WeatherTool
-from src.agent.adapters.tools.kb import KnowledgeBaseTool
+from agent.core.orchestrator import Orchestrator
+from agent.adapters.tools.calculator import CalculatorTool
+from agent.adapters.tools.weather import WeatherTool
+from agent.adapters.tools.kb import KnowledgeBaseTool
 
 
 def test_orchestrator_initialization(fake_llm_client, tool_registry, telemetry):

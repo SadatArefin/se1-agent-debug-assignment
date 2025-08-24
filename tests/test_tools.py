@@ -1,9 +1,9 @@
 """Tests for tool implementations."""
 import pytest
-from src.agent.adapters.tools.calculator import CalculatorTool
-from src.agent.adapters.tools.weather import WeatherTool
-from src.agent.adapters.tools.kb import KnowledgeBaseTool
-from src.agent.adapters.tools.unit_converter import UnitConverterTool
+from agent.adapters.tools.calculator import CalculatorTool
+from agent.adapters.tools.weather import WeatherTool
+from agent.adapters.tools.kb import KnowledgeBaseTool
+from agent.adapters.tools.unit_converter import UnitConverterTool
 
 
 class TestCalculatorTool:

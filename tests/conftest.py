@@ -1,9 +1,9 @@
 """Test configuration and fixtures."""
 import pytest
-from src.agent.core.orchestrator import Orchestrator
-from src.agent.adapters.llm.fake_client import FakeClient
-from src.agent.registry import ToolRegistry
-from src.agent.adapters.telemetry.otel import OTelTelemetry
+from agent.core.orchestrator import Orchestrator
+from agent.adapters.llm.fake_client import FakeClient
+from agent.registry import ToolRegistry
+from agent.adapters.telemetry.otel import OTelTelemetry
 
 
 @pytest.fixture

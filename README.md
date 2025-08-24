@@ -1,95 +1,103 @@
-# Assignment Project from Optimizely
+# Refactored & Extended: Simple Tool-Using Agent
 
-This project is completed as an assignment for Optimizely, focusing on making brittle code solid, typed, and easy to extend without using frameworks.
+This project is a refactored and extended version of a simple tool-using agent. The original brittle code has been transformed into a robust, production-quality system that is typed, tested, and easily extensible. This was completed as an assignment for Optimizely.
 
-## Architecture
+## Architecture Overview
 
-![Initial Architecture](initial_architecture.png)
+The agent's architecture is designed to be modular and scalable, separating core logic from specific implementations.
 
-### Components
+```ascii
++---------------------+      +---------------------+      +---------------------+
+|      Orchestrator   |----->|    Tool Executor    |----->|     Tool Registry   |
++---------------------+      +---------------------+      +---------------------+
+          |                            |                            |
+          |                            |      +---------------------+
+          v                            |      |       Tools         |
++---------------------+                |      | (Calculator, Weather, |
+|      LLM Client     |<---------------+      |  Translator, etc.)  |
+| (OpenAI, Fake, etc.)|                       +---------------------+
++---------------------+
+```
 
-- **Input Guardrails:** trim, sanitize, token budget
-- **Interpreter:** asks the model for a plan, not a final answer
-- **Parser and Router:** fix messy output, enrich simple multi-step cases
-- **Runner:** executes tool calls in order, uses placeholders t0, t1
-- **Toolbox and Registry:** calculator, weather, knowledge base, foreign exchange, unit converter, translator, time and date
-- **Responder:** returns either direct text or the last tool result
-- **Output Guardrails:** validate type, round numbers, format text, redact unsafe bits
-- **Telemetry:** logging, usage, price, latency from start to finish
+- **Orchestrator (`agent/core/orchestrator.py`):** The central component that coordinates the agent's workflow. It takes user input, interacts with the LLM to create a plan, and uses the `ToolExecutor` to execute the plan.
+- **Tool Executor (`agent/core/tool_executor.py`):** Responsible for executing tool calls from the plan. It validates tool names and arguments.
+- **Tool Registry (`agent/registry.py`):** A central repository for all available tools. Tools are registered at startup, making it easy to add new ones.
+- **Tools (`agent/adapters/tools/`):** Individual tools that the agent can use. Each tool is a self-contained class created from a function using the `@tool` decorator, which simplifies creation and validation.
+- **LLM Clients (`agent/adapters/llm/`):** Adapters for different Large Language Models. The system can switch between a `FakeClient` for testing and a real `OpenAIClient`.
 
-## Key Behavior
+## Key Features & Patterns
 
-- **Safety:** calculator uses AST, no eval
-- **Typing:** schemas for plans and tool args
-- **Fault tolerance:** malformed model output parsed with strict then loose strategies
-- **Defaults:** static providers for tests, swap to real APIs by config
+- **Decorator-based Tool Creation:** The `@tool` decorator in `agent/core/decorators.py` turns simple Python functions into full-fledged, schema-validated tools.
+- **Policy-Driven Execution:** Policies for `retries` and `execution` control how tools are run, making the system more resilient.
+- **Input/Output Guardrails:** The system validates inputs and outputs at multiple layers, from tool arguments to LLM responses, ensuring robustness.
+- **Extensibility:** Adding a new tool is as simple as creating a new function with the `@tool` decorator and registering it.
 
+## Quick Start
 
-## Requirements
+### Prerequisites
 
-- **Python:** 3.10 or newer
-- **OS:** Linux, macOS, Windows
+- Python 3.10+
 
-## Setup
+### Installation
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone <repository-url>
+    cd se1-agent-debug-assignment
+    ```
+
+2.  **Create and activate a virtual environment:**
+
+    For Windows (PowerShell):
+
+    ```powershell
+    python -m venv .venv
+    .venv\Scripts\Activate.ps1
+    ```
+
+    For macOS/Linux:
+
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Running the Agent
+
+You can run the agent from the command line with a query:
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
+# Basic calculations
+python main.py "What is 12.5% of 243?"
+
+# Weather information
+python main.py "Summarize today's weather in Paris in 3 words"
+
+# Knowledge-based questions
+python main.py "Who is Ada Lovelace?"
+
+# Multi-step tool use
+python main.py "Add 10 to the average temperature in Paris and London right now."
+
+# New tools: Translation
+python main.py "Translate 'hello world' to Spanish"
+
+# New tools: Unit Conversion
+python main.py "Convert 100 degrees Celsius to Fahrenheit"
 ```
 
-## Configure Model Provider
+### Running Tests
 
-Choose one provider with environment variables:
-
-```env
-MODEL_PROVIDER=openai, anthropic, gemini, ollama, or fake
-OPENAI_API_KEY=...        # when MODEL_PROVIDER=openai
-ANTHROPIC_API_KEY=...     # when MODEL_PROVIDER=anthropic
-GEMINI_API_KEY=...        # when MODEL_PROVIDER=gemini
-OLLAMA_BASE_URL=http://localhost:11434  # when MODEL_PROVIDER=ollama
-OLLAMA_MODEL=gemma2:2b                   # example
-```
-
-### Optional Telemetry Settings
-
-```env
-LOG_LEVEL=info, debug
-ENABLE_PRICING=true or false
-ENABLE_LATENCY=true or false
-```
-
-## Run
-
-Pass your prompt to main.py:
-
-```bash
-python app/main.py "What is 12.5% of 243?"
-# or
-python -m app.main "Summarize today's weather in Paris in 3 words"
-```
-
-### Example Queries
-
-The following examples should work out of the box:
-
-```
-"What is 12.5% of 243?"
-"Who is Ada Lovelace?"
-"Add 10 to the average temperature in Paris and London right now."
-"Convert the average of 10 and 20 USD into EUR."
-```
-
-## Test
+The project includes a comprehensive test suite. To run the tests:
 
 ```bash
 pytest -q
 ```
 
-## Troubleshooting
-
-- **No output:** check MODEL_PROVIDER, API key, .env loaded
-- **Ollama errors:** confirm base URL, model pulled
-- **Tests flaky:** switch to MODEL_PROVIDER=fake
+This will execute all unit and integration tests, ensuring that all components are working correctly.

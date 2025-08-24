@@ -1,7 +1,7 @@
 """Tests for LLM clients."""
 import pytest
-from src.agent.adapters.llm.fake_client import FakeClient
-from src.agent.adapters.llm.openai_client import OpenAIClient
+from agent.adapters.llm.fake_client import FakeClient
+from agent.adapters.llm.openai_client import OpenAIClient
 
 
 class TestFakeClient:

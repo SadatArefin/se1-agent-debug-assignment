@@ -1,6 +1,6 @@
 """Tests for JSON guardrails and repair functionality."""
 import pytest
-from src.agent.core.guardrails import (
+from agent.core.guardrails import (
     sanitize_input,
     validate_tool_call,
     repair_json,
