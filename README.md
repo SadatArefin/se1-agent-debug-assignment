@@ -262,16 +262,48 @@ All logs are stored in the `logs/` directory with the following structure:
 - Validation results
 - Error context and stack traces
 
+#### Telemetry System
+
+The agent includes an enhanced telemetry system that provides detailed tracking of all operations:
+
+**Telemetry Features:**
+
+- **Request Tracking:** Each request gets a unique ID for end-to-end tracing
+- **Span-based Timing:** Detailed timing information for all operations (LLM calls, tool execution, validation)
+- **Event Logging:** Structured logging of all significant events in the system
+- **Performance Monitoring:** Automatic collection of latency and performance metrics
+- **Error Tracking:** Comprehensive error logging with full context
+
+**Telemetry Configuration:**
+
+```bash
+# Enable/disable telemetry (enabled by default)
+export ENABLE_TELEMETRY=true
+
+# Telemetry automatically integrates with the logging system
+# All telemetry data is written to the structured log files
+```
+
+**Finding Telemetry Data:**
+
+- **Performance Logs:** `logs/performance_YYYYMMDD.log` - Contains timing and performance metrics
+- **Agent Logs:** `logs/agent_YYYYMMDD.log` - Contains request tracking and span information
+- **Tool Logs:** `logs/tools_YYYYMMDD.log` - Contains detailed tool execution telemetry
+- **Error Logs:** `logs/errors_YYYYMMDD.log` - Contains error telemetry and failure tracking
+
 #### Log Analysis
 
 Use the built-in log analyzer to get insights:
 
 ```bash
-# Get comprehensive analysis report
+# Get comprehensive analysis report (includes telemetry analysis)
 python main.py --analyze-logs
 
-# View current session information
+# View current session information and log locations
 python main.py --log-summary
+
+# Enable verbose console output to see telemetry in real-time
+python main.py --verbose "your query here"
 ```
 
 The analyzer provides:
@@ -280,23 +312,71 @@ The analyzer provides:
 - Tool usage patterns and performance
 - Error analysis and trends
 - Recent request history
+- Telemetry span analysis
+- Request correlation tracking
+
+#### Log File Locations & Structure
+
+**Default Log Directory:** `./logs/`
+
+**Log Files:**
+
+- **`agent_YYYYMMDD.log`** - Main application logs including:
+  - Request start/end with unique IDs
+  - Telemetry span tracking
+  - Component debug information
+  - Registry operations
+- **`performance_YYYYMMDD.log`** - Performance telemetry including:
+  - End-to-end request latency
+  - Individual operation timing
+  - Success/failure rates
+  - Performance trends
+- **`tools_YYYYMMDD.log`** - Tool execution telemetry including:
+  - Tool invocation details
+  - Execution timing and results
+  - Tool-specific performance metrics
+  - Tool usage patterns
+- **`errors_YYYYMMDD.log`** - Error telemetry including:
+  - Full error context and stack traces
+  - Error correlation with request IDs
+  - Failure analysis data
+
+**Log Format:**
+All logs use structured JSON format for easy parsing and analysis:
+
+```json
+{
+	"timestamp": "2025-08-24T14:27:57.511661",
+	"request_id": "session_1756024077_req_0001",
+	"operation": "tool_execution",
+	"tool_name": "calc",
+	"latency_ms": 1.72,
+	"success": true
+}
+```
 
 #### Configuration
 
-Control logging behavior with environment variables:
+Control logging and telemetry behavior with environment variables:
 
 ```bash
 # Set log level (DEBUG, INFO, WARNING, ERROR)
 export LOG_LEVEL=DEBUG
 
-# Control console output
-export ENABLE_CONSOLE_LOGGING=true
+# Control console output (false by default for clean UI)
+export ENABLE_CONSOLE_LOGGING=false
 
-# Enable/disable telemetry
+# Enable verbose console mode for development
+python main.py --verbose "your query"
+
+# Enable/disable telemetry collection
 export ENABLE_TELEMETRY=true
 
 # Custom log directory
 export LOG_DIR=./custom_logs
+
+# Log retention (optional)
+export LOG_RETENTION_DAYS=30
 ```
 
 ## Available Tools
