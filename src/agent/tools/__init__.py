@@ -1,5 +1,6 @@
 """New decorator-based tool implementations."""
 
+import re
 from ..core.decorators import tool
 
 
@@ -14,28 +15,26 @@ def calculator(expr: str) -> float:
     Returns:
         float: Result of the calculation
     """
-    import re
+    original_expr = expr
+    e = expr.lower().strip()
     
-    e = expr.lower().replace("what is","").strip()
+    # Remove common question words and phrases
+    e = e.replace("what is", "").replace("calculate", "").replace("?", "").strip()
     
+    # Handle percentage calculations first
     if "% of" in e:
-        # Handle percentage calculations
         try:
             left, right = e.split("% of")
             x = float(left.strip())
             y = float(right.strip())
             return (x/100.0)*y
         except Exception:
-            return eval(expr)
+            pass  # Fall through to other methods
     
     # Handle simple mathematical expressions
     try:
-        # Basic expression cleaning - remove common words
-        e = e.replace("what is", "").replace("calculate", "").strip()
-        
-        # Handle basic arithmetic patterns
+        # Handle "add X to Y" patterns
         if "add" in e and "to" in e:
-            # Pattern: "add X to Y" -> "Y + X"
             parts = e.split("add")
             if len(parts) == 2:
                 after_add = parts[1].strip()
@@ -45,26 +44,37 @@ def calculator(expr: str) -> float:
                         num_to_add = add_parts[0].strip()
                         target = add_parts[1].strip()
                         
-                        # Extract numbers if possible
-                        add_match = re.search(r'(\d+(?:\.\d+)?)', num_to_add)
-                        target_match = re.search(r'(\d+(?:\.\d+)?)', target)
-                        
-                        if add_match and target_match:
-                            return float(target_match.group(1)) + float(add_match.group(1))
+                        # Extract numbers
+                        try:
+                            add_match = re.search(r'(\d+(?:\.\d+)?)', num_to_add)
+                            target_match = re.search(r'(\d+(?:\.\d+)?)', target)
+                            
+                            if add_match and target_match:
+                                return float(target_match.group(1)) + float(add_match.group(1))
+                        except:
+                            pass
         
-        # Clean up for simple eval
-        e = e.replace("plus ", "+").replace("minus ", "-").replace("times ", "*").replace("divided by", "/")
+        # Clean up text operators
+        e = e.replace("plus", "+").replace("minus", "-").replace("times", "*").replace("divided by", "/")
+        e = e.replace("add", "+").replace("subtract", "-").replace("multiply", "*").replace("divide", "/")
         
-        # Only eval if it looks like a mathematical expression
+        # Check if it's now a valid mathematical expression (numbers and operators only)
         if re.match(r'^[\d\s+\-*/().%]+$', e):
-            return eval(e)
+            result = eval(e)
+            return float(result)
         else:
-            # If it's not a simple math expression, return an error message
-            raise ValueError(f"Cannot evaluate complex expression: {expr}")
+            # If still contains letters, try to extract just the mathematical part
+            math_match = re.search(r'([\d\s+\-*/().%]+)', e)
+            if math_match:
+                math_expr = math_match.group(1).strip()
+                if math_expr:
+                    result = eval(math_expr)
+                    return float(result)
+            
+            raise ValueError(f"Cannot parse mathematical expression from: {original_expr}")
             
     except Exception as ex:
-        # Return error message instead of crashing
-        raise ValueError(f"Invalid mathematical expression: {expr}. Error: {str(ex)}")
+        raise ValueError(f"Invalid mathematical expression: {original_expr}. Error: {str(ex)}")
 
 
 @tool(name="weather", description="Get temperature information for cities")

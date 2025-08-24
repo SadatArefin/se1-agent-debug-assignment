@@ -33,18 +33,39 @@ class ToolRegistry:
     def __init__(self):
         self._tools: Dict[str, Tool] = {}
         self._auto_discovery_enabled = True
+        # Import logging after the class is defined to avoid circular imports
+        try:
+            from .logging_config import get_logger
+            self._logger = get_logger()
+        except ImportError:
+            self._logger = None
     
     def register(self, tool: Tool) -> None:
         """Register a tool."""
         tool_name = tool.name()
+        
+        # Check if tool is already registered to avoid duplicates
+        if tool_name in self._tools:
+            logger.debug(f"Tool {tool_name} already registered, skipping duplicate registration")
+            return
+            
         self._tools[tool_name] = tool
         logger.debug(f"Registered tool: {tool_name}")
+        
+        # Only log to our custom logger if it's available and console logging is enabled
+        if self._logger and hasattr(self._logger, 'enable_console') and self._logger.enable_console:
+            self._logger.log_registry_operation("register", tool_name, {
+                "description": tool.description()
+            })
     
     def unregister(self, name: str) -> bool:
         """Unregister a tool by name."""
         if name in self._tools:
             del self._tools[name]
             logger.debug(f"Unregistered tool: {name}")
+            
+            if self._logger:
+                self._logger.log_registry_operation("unregister", name)
             return True
         return False
     
