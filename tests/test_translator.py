@@ -1,6 +1,6 @@
 """Tests for translator tool functionality."""
 import pytest
-from agent.adapters.tools.translator import TranslatorTool
+from src.agent.adapters.tools.translator import TranslatorTool
 
 
 class TestTranslatorTool:

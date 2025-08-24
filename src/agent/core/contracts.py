@@ -50,6 +50,10 @@ class Registry(Protocol):
         """Get a tool by name."""
         ...
     
+    def has_tool(self, name: str) -> bool:
+        """Check if a tool is registered."""
+        ...
+    
     def list_tools(self) -> List[str]:
         """List all registered tool names."""
         ...

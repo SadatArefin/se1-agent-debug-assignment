@@ -4,22 +4,16 @@ try:
     from pydantic_settings import BaseSettings
     from pydantic import ConfigDict
 except ImportError:
-    # Fallback for older pydantic versions
     from pydantic import BaseSettings
     ConfigDict = None
 
 
 class Config(BaseSettings):
-    """Application configuration."""
     
-    # LLM settings
     llm_provider: str = "fake"
-    openai_api_key: Optional[str] = None
     
-    # Tool settings
     kb_path: str = "data/kb.json"
     
-    # Telemetry settings
     enable_telemetry: bool = False
     
     if ConfigDict:
@@ -33,5 +27,4 @@ class Config(BaseSettings):
             env_file_encoding = "utf-8"
 
 
-# Global config instance
 config = Config()

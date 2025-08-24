@@ -30,6 +30,11 @@ class Orchestrator:
             if self.telemetry:
                 self.telemetry.log_event("question_received", {"question": clean_question})
             
+            # Log available tools for debugging
+            available_tools = self.registry.list_tools()
+            if self.telemetry:
+                self.telemetry.log_event("available_tools", {"tools": available_tools})
+            
             # Get plan from LLM
             plan = self.llm_client.call(clean_question)
             
@@ -64,6 +69,11 @@ class Orchestrator:
     def _execute_tool_call(self, tool_call: ToolCall) -> Any:
         """Execute a tool call."""
         try:
+            # Check if tool exists
+            if not self.registry.has_tool(tool_call.tool):
+                available_tools = self.registry.list_tools()
+                return f"Tool '{tool_call.tool}' not found. Available tools: {', '.join(available_tools)}"
+            
             tool = self.registry.get_tool(tool_call.tool)
             result = tool.execute(**tool_call.args)
             

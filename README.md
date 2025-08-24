@@ -1,10 +1,8 @@
-# Refactored & Extended: Simple Tool-Using Agent
+# Simple Tool-Using Agent
 
-This project is a refactored and extended version of a simple tool-using agent. The original brittle code has been transformed into a robust, production-quality system that is typed, tested, and easily extensible. This was completed as an assignment for Optimizely.
+A modular tool-using agent with decorator-based tool creation and extensible architecture.
 
-## Architecture Overview
-
-The agent's architecture is designed to be modular and scalable, separating core logic from specific implementations.
+## Architecture
 
 ```ascii
 +---------------------+      +---------------------+      +---------------------+
@@ -15,20 +13,20 @@ The agent's architecture is designed to be modular and scalable, separating core
           v                            |      |       Tools         |
 +---------------------+                |      | (Calculator, Weather, |
 |      LLM Client     |<---------------+      |  Translator, etc.)  |
-| (OpenAI, Fake, etc.)|                       +---------------------+
+| (Fake, etc.)        |                       +---------------------+
 +---------------------+
 ```
 
-- **Orchestrator (`agent/core/orchestrator.py`):** The central component that coordinates the agent's workflow. It takes user input, interacts with the LLM to create a plan, and uses the `ToolExecutor` to execute the plan.
-- **Tool Executor (`agent/core/tool_executor.py`):** Responsible for executing tool calls from the plan. It validates tool names and arguments.
-- **Tool Registry (`agent/registry.py`):** A central repository for all available tools. Tools are registered at startup, making it easy to add new ones.
-- **Tools (`agent/adapters/tools/`):** Individual tools that the agent can use. Each tool is a self-contained class created from a function using the `@tool` decorator, which simplifies creation and validation.
-- **LLM Clients (`agent/adapters/llm/`):** Adapters for different Large Language Models. The system can switch between a `FakeClient` for testing and a real `OpenAIClient`.
+- **Orchestrator:** Coordinates workflow, interacts with LLM, executes plans
+- **Tool Executor:** Executes tool calls with validation
+- **Tool Registry:** Central repository for all tools
+- **Tools:** Self-contained classes using `@tool` decorator
+- **LLM Clients:** Adapters for different LLMs
 
-## Key Features & Patterns
+## Features
 
-- **Decorator-based Tool Creation:** The `@tool` decorator in `agent/core/decorators.py` turns simple Python functions into full-fledged, schema-validated tools.
-- **Policy-Driven Execution:** Policies for `retries` and `execution` control how tools are run, making the system more resilient.
+- **Decorator-based Tool Creation:** `@tool` decorator creates schema-validated tools
+- **Policy-Driven Execution:** Retry and execution policies for resilience
 - **Input/Output Guardrails:** The system validates inputs and outputs at multiple layers, from tool arguments to LLM responses, ensuring robustness.
 - **Extensibility:** Adding a new tool is as simple as creating a new function with the `@tool` decorator and registering it.
 
